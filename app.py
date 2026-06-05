@@ -6,6 +6,7 @@ from supabase import create_client, client
 #Configuração da Página
 st.set_page_config(page_title="Mansão App")
 st.title("Mansão das Figurinhas")
+st.write("Completar o albúm é nossa única meta")
 
 #Conecta supabase
 url = "https://pbgqppburbsifxikmgjy.supabase.co"
@@ -21,7 +22,7 @@ if not df.empty:
 
     #Sanfona1
     for grupo in distinct_grupos:
-        with st.expander(f'📅 Grupo {grupo}'):
+        with st.expander(f'⚽ Grupo {grupo}'):
             selecoes_grupo = df[df['Grupo'] == grupo]['Selecao'].unique()
 
             for selecao in selecoes_grupo:
