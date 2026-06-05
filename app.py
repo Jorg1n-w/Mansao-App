@@ -9,8 +9,8 @@ st.title("Mansão das Figurinhas")
 st.write("Completar o albúm é nossa única meta")
 
 #Conecta supabase
-url = "https://pbgqppburbsifxikmgjy.supabase.co"
-key = "sb_publishable_3wX2yAg-4iPKxnujUa_TYA_fqk0SdCN"
+url = st.secrets["SUPABASE_URL"]
+key = st.secrets["SUPABASE_KEY"]
 supabase: client = create_client(url, key)
 
 #Popula df com dados do supabase
