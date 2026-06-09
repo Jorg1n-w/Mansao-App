@@ -117,6 +117,97 @@ if not df.empty:
 
     aba_album, aba_repetidas = st.tabs(["📒 Álbum", "🔁 Repetidas"])
 
+    def gera_texto_obtidas(df):
+        texto_final = ""
+
+        df_obtido = df[df['Obtido'] == True]
+
+        grupo_obtido = df_obtido['Grupo'].unique()
+
+        for grupo in grupo_obtido:
+
+            texto_final += f"*GRUPO {grupo.upper()}*\n"
+
+            df_grupo = df_obtido[df_obtido['Grupo'] == grupo]
+            selecoes_obtido = df_grupo['Selecao'].unique()
+
+            for selecao in selecoes_obtido:
+
+                df_selecao = df_grupo[df_grupo['Selecao'] == selecao]
+                bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+
+                numeros_lista = df_selecao['Cod_Figurinha'].sort_values().astype(str).tolist()
+                numeros_formatados = ", ".join(numeros_lista)
+
+                texto_final += f"{bandeira} {selecao}:\n {numeros_formatados}\n"
+
+            texto_final += "\n"
+            
+        return texto_final.strip()
+    
+    def gera_texto_nobtidas(df):
+        texto_final = ""
+
+        df_nobtido = df[df['Obtido'] == False]
+
+        grupo_nobtido = df_nobtido['Grupo'].unique()
+
+        for grupo in grupo_nobtido:
+
+            texto_final += f"*GRUPO {grupo.upper()}*\n"
+
+            df_grupo = df_nobtido[df_nobtido['Grupo'] == grupo]
+            selecoes_nobtido = df_grupo['Selecao'].unique()
+
+            for selecao in selecoes_nobtido:
+
+                df_selecao = df_grupo[df_grupo['Selecao'] == selecao]
+                bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+
+                numeros_lista = df_selecao['Cod_Figurinha'].sort_values().astype(str).tolist()
+                numeros_formatados = ", ".join(numeros_lista)
+
+                texto_final += f"{bandeira} {selecao}:\n {numeros_formatados}\n"
+
+            texto_final += "\n"
+            
+        return texto_final.strip()
+
+    def gera_texto_repetidas(df):
+        texto_final = ""
+
+        df_repeat = df[(df['Obtido'] == True) & (df['QTD'] > 0)]
+
+        grupo_repeat = df_repeat['Grupo'].unique()
+
+        for grupo in grupo_repeat:
+
+            texto_final += f"*GRUPO {grupo.upper()}*\n"
+
+            df_grupo = df_repeat[df_repeat['Grupo'] == grupo]
+            selecoes_repeat = df_grupo['Selecao'].unique()
+
+            for selecao in selecoes_repeat:
+
+                df_selecao = df_grupo[df_grupo['Selecao'] == selecao]
+                bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+                figurinhas_repeat = df_selecao['Cod_Figurinha'].unique()
+
+                texto_final += f"{bandeira} {selecao}:\n"
+
+                for figurinha in figurinhas_repeat:
+
+                    cod_figurinha = df_selecao.loc[df_selecao['Cod_Figurinha'] == figurinha, 'Cod_Figurinha'].item()
+                    qtd_figurinha = df_selecao.loc[df_selecao['Cod_Figurinha'] == figurinha, 'QTD'].sum()
+
+                    texto_final += f"- {cod_figurinha}: {qtd_figurinha}\n"
+
+                
+
+            texto_final += "\n"
+            
+        return texto_final.strip()
+
     with aba_album:
         
         item_pesquisa = st.text_input("🔍 Pesquisar figurinha, seleção ou grupo: (figurinhas devem ser pesquisadas pelo código. Ex: KSA01, MEX19. Apague e aperte enter para limpar.)")
@@ -187,9 +278,32 @@ if not df.empty:
                                         st.session_state.grupo_aberto = grupo
                                         st.session_state.selecao_aberta = selecao
                                         st.rerun()
+            
+            with st.expander("📱 Exportar Obtidas para WhatsApp"):
+                st.write("Clique no botão de copiar no canto superior direito do quadro abaixo:")
+                
+                
+                texto_zap = gera_texto_obtidas(df)
+                
+                if texto_zap:
+                    st.code(texto_zap, language="text")
+                else:
+                    st.success("-")
+            
+            with st.expander("📱 Exportar Não Obtidas para WhatsApp"):
+                st.write("Clique no botão de copiar no canto superior direito do quadro abaixo:")
+                
+                texto_zap = gera_texto_nobtidas(df)
+                
+                if texto_zap:
+                    st.code(texto_zap, language="text")
+                else:
+                    st.success("-")
 
         else:
             st.info("Nenhuma figurinha encontrada para a busca atual.")
+
+
     with aba_repetidas:
         item_pesquisa_REP = st.text_input("🔍 Pesquisar figurinha, seleção ou grupo:  (figurinhas devem ser pesquisadas pelo código. Ex: KSA01, MEX19. Apague e aperte enter para limpar.)")
         df_filtrado = df[df['Obtido'] == True]
@@ -256,6 +370,16 @@ if not df.empty:
                                         
                                 # Cria uma linha divisória quase invisível entre as figurinhas
                                 st.markdown("<hr style='margin: 4px 0px; border-color: rgba(255,255,255,0.05);'>", unsafe_allow_html=True)
+
+            with st.expander("📱 Exportar Repetidas para WhatsApp"):
+                st.write("Clique no botão de copiar no canto superior direito do quadro abaixo:")
+                
+                texto_zap = gera_texto_repetidas(df)
+                
+                if texto_zap:
+                    st.code(texto_zap, language="text")
+                else:
+                    st.success("-")
 
 else:
     st.info("Deu ruim fml! O banco de dados está vazio.")
