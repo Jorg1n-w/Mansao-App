@@ -11,23 +11,61 @@ if 'grupo_aberto' not in st.session_state:
 if 'selecao_aberta' not in st.session_state:
     st.session_state.selecao_aberta = None
 
-# CSS HACK PARA A GRADE NO CELULAR
+
 st.markdown("""
     <style>
+        /* 1. Otimização do Layout do Streamlit para Celular */
         @media (max-width: 640px) {
+            /* Força as colunas a ficarem lado a lado (Grid de 4) */
             div[data-testid="stColumns"],
             div[data-testid="stHorizontalBlock"] {
                 display: flex !important;
                 flex-direction: row !important;
                 flex-wrap: wrap !important;
+                gap: 2% !important; /* Espaço mínimo entre as colunas */
             }
+            
+            /* Define que cada coluna ocupa 23.5% (cabem 4 na tela) */
             div[data-testid="stColumn"],
             div[data-testid="column"] {
-                width: 25% !important;
-                flex: 0 0 25% !important;
-                min-width: 25% !important;
-                padding: 0 2px !important;
+                width: 23.5% !important;
+                flex: 0 0 23.5% !important;
+                min-width: 23.5% !important;
+                padding: 0 !important; /* Remove o padding da coluna */
+                margin-bottom: 6px !important; /* Distância para a linha de baixo */
             }
+        }
+
+        /* 2. Estilização Global dos Botões (Formato Figurinha) */
+        /* Alvo: Botões que estão dentro das colunas */
+        div[data-testid="stColumns"] button {
+            height: 45px !important; /* Força uma altura quadrada padrão */
+            padding: 0 !important; /* Remove o respiro interno do botão */
+            margin: 0 !important; 
+            border-radius: 6px !important; /* Bordas levemente arredondadas */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            font-size: 14px !important; /* Tamanho da fonte mais legível */
+            font-weight: 600 !important; /* Texto em negrito */
+            letter-spacing: 0.5px !important; /* Espaçamento entre as letras */
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+        }
+
+        /* 3. Cores Customizadas (Opcional, para deixar mais bonito) */
+        /* Botão Faltante (Secundário) */
+        button[data-testid="baseButton-secondary"] {
+            background-color: transparent !important;
+            border: 1.5px solid #444 !important; /* Borda cinza escura */
+            color: #ccc !important;
+        }
+        
+        /* Botão Obtido (Primário) */
+        button[data-testid="baseButton-primary"] {
+            background-color: #ff4b4b !important; /* Vermelho Streamlit / Copa */
+            border: 1.5px solid #ff4b4b !important;
+            color: white !important;
         }
     </style>
 """, unsafe_allow_html=True)
