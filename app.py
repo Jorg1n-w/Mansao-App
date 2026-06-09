@@ -100,6 +100,8 @@ supabase: Client = create_client(url, key)
 # Popula df com dados do supabase
 get = supabase.table('Figurinhas').select("*").execute()
 df = pd.DataFrame(get.data)
+get_bandeiras = supabase.table('Bandeiras').select("*").execute()
+df_band = pd.DataFrame(get_bandeiras.data)
 
 if not df.empty:
     df = df.sort_values(by='IdFigurinha')
@@ -147,9 +149,10 @@ if not df.empty:
                         manter_aberto_selecao = (st.session_state.selecao_aberta == selecao)
                         obtido_selecao = df.loc[df['Selecao'] == selecao, 'Obtido'].sum()
                         total_selecao = df.loc[df['Selecao'] == selecao, 'Obtido'].count()
+                        bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
                         pct_selecao = round((obtido_selecao/total_selecao)*100) if total_selecao > 0 else 0
 
-                        with st.expander(f'👕 {selecao} | {pct_selecao}% ({obtido_selecao}/{total_selecao})', expanded=manter_aberto_selecao):
+                        with st.expander(f'{bandeira} {selecao} | {pct_selecao}% ({obtido_selecao}/{total_selecao})', expanded=manter_aberto_selecao):
                             
                             figurinhas_selecao = df[(df['Grupo'] == grupo) & (df['Selecao'] == selecao)]
                             figurinhas_selecao = figurinhas_selecao.sort_values(by='IdFigurinha')
@@ -214,8 +217,9 @@ if not df.empty:
                     for selecao in selecoes_grupo:
                         manter_aberto_selecao_rep = (st.session_state.selecao_aberta_repetidas == selecao)
                         total_rep_selecao = df.loc[df['Selecao'] == selecao, 'QTD'].sum()
+                        bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
 
-                        with st.expander(f'👕 {selecao} | {total_rep_selecao} Repetidas', expanded=manter_aberto_selecao_rep):
+                        with st.expander(f'{bandeira} {selecao} | {total_rep_selecao} Repetidas', expanded=manter_aberto_selecao_rep):
                             
                             figurinhas_selecao = df[(df['Grupo'] == grupo) & (df['Selecao'] == selecao)]
                             figurinhas_selecao = figurinhas_selecao.sort_values(by='IdFigurinha')
@@ -236,8 +240,8 @@ if not df.empty:
                                     if st.button("➖", key=f"menos_{id_fig}", type="secondary", use_container_width=True):
                                         if qtd_repetidas > 0: # Impede o número de ficar negativo
                                             supabase.table('Figurinhas').update({'QTD': qtd_repetidas - 1}).eq('IdFigurinha', id_fig).execute()
-                                            st.session_state.grupo_aberto_rep = grupo
-                                            st.session_state.selecao_aberta_rep = selecao
+                                            st.session_state.grupo_aberto_repetidas = grupo
+                                            st.session_state.selecao_aberta_repetidas = selecao
                                             st.rerun()
 
                                 with col_qtd:
@@ -246,8 +250,8 @@ if not df.empty:
                                 with col_mais:
                                     if st.button("➕", key=f"mais_{id_fig}", type="primary", use_container_width=True):
                                         supabase.table('Figurinhas').update({'QTD': qtd_repetidas + 1}).eq('IdFigurinha', id_fig).execute()
-                                        st.session_state.grupo_aberto_rep = grupo
-                                        st.session_state.selecao_aberta_rep = selecao
+                                        st.session_state.grupo_aberto_repetidas = grupo
+                                        st.session_state.selecao_aberta_repetidas = selecao
                                         st.rerun()
                                         
                                 # Cria uma linha divisória quase invisível entre as figurinhas
