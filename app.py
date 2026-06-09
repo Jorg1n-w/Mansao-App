@@ -118,7 +118,7 @@ if not df.empty:
     aba_album, aba_repetidas = st.tabs(["📒 Álbum", "🔁 Repetidas"])
 
     def gera_texto_obtidas(df):
-        texto_final = ""
+        texto_final = "*Figurinhas Obtidas* \n\n"
 
         df_obtido = df[df['Obtido'] == True]
 
@@ -146,7 +146,7 @@ if not df.empty:
         return texto_final.strip()
     
     def gera_texto_nobtidas(df):
-        texto_final = ""
+        texto_final = "*Figurinhas Não Obtidas* \n\n"
 
         df_nobtido = df[df['Obtido'] == False]
 
@@ -174,7 +174,7 @@ if not df.empty:
         return texto_final.strip()
 
     def gera_texto_repetidas(df):
-        texto_final = ""
+        texto_final = "*Figurinhas Repetidas* \n\n"
 
         df_repeat = df[(df['Obtido'] == True) & (df['QTD'] > 0)]
 
