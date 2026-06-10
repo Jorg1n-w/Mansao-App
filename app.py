@@ -139,6 +139,23 @@ if not df.empty:
 
     aba_album, aba_repetidas = st.tabs(["📒 Álbum", "🔁 Repetidas"])
 
+    # ==========================================
+    # NOVO: DICIONÁRIO DE BANDEIRAS (Otimização 1)
+    # ==========================================
+    # Pré-computar as bandeiras num dicionário em vez de usar .loc em todos os ciclos
+    if 'dict_bandeiras' not in st.session_state:
+        # Tenta criar um dicionário a partir do DataFrame; assume 'Nome' e 'Bandeira'
+        try:
+            st.session_state.dict_bandeiras = df_band.set_index('Nome')['Bandeira'].to_dict()
+        except KeyError:
+            # Caso a coluna se chame 'Selecao' ou outra coisa, usa fallback
+            st.session_state.dict_bandeiras = {}
+
+    dict_band = st.session_state.dict_bandeiras
+
+    def get_bandeira(nome_selecao):
+        return dict_band.get(nome_selecao, "🏳️")
+
     def gera_texto_obtidas(df):
         texto_final = "*Figurinhas Obtidas* \n\n"
 
@@ -156,7 +173,7 @@ if not df.empty:
             for selecao in selecoes_obtido:
 
                 df_selecao = df_grupo[df_grupo['Selecao'] == selecao]
-                bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+                bandeira = get_bandeira(selecao)
 
                 numeros_lista = df_selecao['Cod_Figurinha'].sort_values().astype(str).tolist()
                 numeros_formatados = ", ".join(numeros_lista)
@@ -184,7 +201,7 @@ if not df.empty:
             for selecao in selecoes_nobtido:
 
                 df_selecao = df_grupo[df_grupo['Selecao'] == selecao]
-                bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+                bandeira = get_bandeira(selecao)
 
                 numeros_lista = df_selecao['Cod_Figurinha'].sort_values().astype(str).tolist()
                 numeros_formatados = ", ".join(numeros_lista)
@@ -212,7 +229,7 @@ if not df.empty:
             for selecao in selecoes_repeat:
 
                 df_selecao = df_grupo[df_grupo['Selecao'] == selecao]
-                bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+                bandeira = get_bandeira(selecao)
                 figurinhas_repeat = df_selecao['Cod_Figurinha'].unique()
 
                 texto_final += f"{bandeira} {selecao}:\n"
@@ -229,6 +246,7 @@ if not df.empty:
             texto_final += "\n"
             
         return texto_final.strip()
+
 
     with aba_album:
         
@@ -262,7 +280,7 @@ if not df.empty:
                         manter_aberto_selecao = (st.session_state.selecao_aberta == selecao)
                         obtido_selecao = df_album.loc[df_album['Selecao'] == selecao, 'Obtido'].sum()
                         total_selecao = df_album.loc[df_album['Selecao'] == selecao, 'Obtido'].count()
-                        bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+                        bandeira = get_bandeira(selecao)
                         pct_selecao = round((obtido_selecao/total_selecao)*100) if total_selecao > 0 else 0
 
                         with st.expander(f'{bandeira} {selecao} | {pct_selecao}% ({obtido_selecao}/{total_selecao})', expanded=manter_aberto_selecao):
@@ -354,7 +372,7 @@ if not df.empty:
                     for selecao in selecoes_grupo:
                         manter_aberto_selecao_rep = (st.session_state.selecao_aberta_repetidas == selecao)
                         total_rep_selecao = df_filtrado_rep.loc[df_filtrado_rep['Selecao'] == selecao, 'QTD'].sum()
-                        bandeira = df_band.loc[df_band['Nome'] == selecao, 'Bandeira'].item()
+                        bandeira = get_bandeira(selecao)
 
                         with st.expander(f'{bandeira} {selecao} | {total_rep_selecao} Repetidas', expanded=manter_aberto_selecao_rep):
                             
