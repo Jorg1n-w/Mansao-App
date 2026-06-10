@@ -108,7 +108,7 @@ def atualizar_banco_bg(id_fig, coluna, novo_valor):
         pass # Ignora erros de rede em silêncio para nunca travar o app
 
 # Popula df com dados do supabase
-@st.cache_data
+
 def carregar_dados_iniciais():
     get = supabase.table('Figurinhas').select("*").execute()
     get_bandeiras = supabase.table('Bandeiras').select("*").execute()
