@@ -113,7 +113,15 @@ def carregar_dados():
         
     return df_figurinhas, df_bandeiras
 
-df, df_band = carregar_dados()
+# PASSO MÁGICO: Salvamos o banco de dados na memória contínua do Streamlit (RAM)
+if 'df_figurinhas' not in st.session_state or 'df_bandeiras' not in st.session_state:
+    df_f, df_b = carregar_dados()
+    st.session_state.df_figurinhas = df_f.copy()
+    st.session_state.df_bandeiras = df_b.copy()
+
+# A partir de agora, o app lê sempre da RAM local (Instantâneo)
+df = st.session_state.df_figurinhas
+df_band = st.session_state.df_bandeiras
 
 if not df.empty:
     total_figurinhas = len(df)
@@ -264,10 +272,13 @@ if not df.empty:
 
                                     if clicou:
                                         novo_status = not status
-                                        supabase.table('Figurinhas').update({'Obtido': novo_status}).eq('IdFigurinha', id_fig).execute()
-                                        carregar_dados.clear()
                                         
-                                        # Guarda o Toast para o próximo recarregamento
+                                        # 1. Atualização Otimista na Memória RAM
+                                        st.session_state.df_figurinhas.loc[st.session_state.df_figurinhas['IdFigurinha'] == id_fig, 'Obtido'] = novo_status
+                                        
+                                        # 2. Envio rápido para o Supabase sem baixar de novo
+                                        supabase.table('Figurinhas').update({'Obtido': novo_status}).eq('IdFigurinha', id_fig).execute()
+                                        
                                         if novo_status:
                                             st.session_state.toast_msg = f"🎉 {figurinha} adicionada ao álbum!"
                                         else:
@@ -339,11 +350,15 @@ if not df.empty:
                                 with col_menos:
                                     if st.button("➖", key=f"menos_{id_fig}", type="secondary", use_container_width=True):
                                         if qtd_repetidas > 0: 
-                                            supabase.table('Figurinhas').update({'QTD': qtd_repetidas - 1}).eq('IdFigurinha', id_fig).execute()
-                                            carregar_dados.clear()
+                                            nova_qtd = qtd_repetidas - 1
+                                            
+                                            # Atualização Otimista local
+                                            st.session_state.df_figurinhas.loc[st.session_state.df_figurinhas['IdFigurinha'] == id_fig, 'QTD'] = nova_qtd
+                                            
+                                            # Envia para o Supabase
+                                            supabase.table('Figurinhas').update({'QTD': nova_qtd}).eq('IdFigurinha', id_fig).execute()
                                             
                                             st.session_state.toast_msg = f"➖ Uma repetida de {figurinha} removida."
-                                            
                                             st.session_state.grupo_aberto_repetidas = grupo
                                             st.session_state.selecao_aberta_repetidas = selecao
                                             st.rerun()
@@ -353,11 +368,15 @@ if not df.empty:
                                 
                                 with col_mais:
                                     if st.button("➕", key=f"mais_{id_fig}", type="primary", use_container_width=True):
-                                        supabase.table('Figurinhas').update({'QTD': qtd_repetidas + 1}).eq('IdFigurinha', id_fig).execute()
-                                        carregar_dados.clear()
+                                        nova_qtd = qtd_repetidas + 1
+                                        
+                                        # Atualização Otimista local
+                                        st.session_state.df_figurinhas.loc[st.session_state.df_figurinhas['IdFigurinha'] == id_fig, 'QTD'] = nova_qtd
+                                        
+                                        # Envia para o Supabase
+                                        supabase.table('Figurinhas').update({'QTD': nova_qtd}).eq('IdFigurinha', id_fig).execute()
                                         
                                         st.session_state.toast_msg = f"➕ Uma repetida de {figurinha} adicionada!"
-                                        
                                         st.session_state.grupo_aberto_repetidas = grupo
                                         st.session_state.selecao_aberta_repetidas = selecao
                                         st.rerun()
